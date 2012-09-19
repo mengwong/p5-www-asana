@@ -1,4 +1,21 @@
 package WWW::Asana;
+# ABSTRACT: Client Class for accessing Asana API
+
+=head1 SYNOPSIS
+
+  my $asana = WWW::Asana->new(
+    api_key => $asana_api_key,
+  );
+
+  my $me = $asana->me;
+
+  print $me->email;
+
+=head1 DESCRIPTION
+
+This library gives an abstract to access the API of the L<Asana|https://www.asana.com/> issue system.
+
+=cut
 
 use MooX qw(
 	+LWP::UserAgent
@@ -6,8 +23,6 @@ use MooX qw(
 	+WWW::Asana::Request
 	+URI
 );
-
-use Class::Load ':all';
 
 our $VERSION ||= '0.000';
 
@@ -120,7 +135,7 @@ sub request {
 		$request = $self->get_request(@args);
 	}
 	my $http_response = $self->useragent->request($request->http_request);
-	return WWW::Asana::Response->new($http_response);
+	return WWW::Asana::Response->new($http_response, $request->to);
 }
 
 =method get_url
@@ -136,14 +151,16 @@ sub get_uri {
 
 =method get_request
 
-Generates a L<WWW::Asana::Request> out of the parameter. The first parameter is the method to use for
-the generated request, the other parameters are taken as part of the URL on the Asana API. If additional
-is given a HashRef at the end of the parameters, then those are used as data for the request.
+Generates a L<WWW::Asana::Request> out of the parameter. The first parameter is target class name given 
+without the B<WWW::Asana::> namespace. The second parameter is the method to use for the generated request,
+the other parameters are taken as part of the URL on the Asana API. If additional is given a HashRef at the
+end of the parameters, then those are used as data for the request.
 
 =cut
 
 sub get_request {
 	my ( $self, @args ) = @_;
+	my $to = shift @args;
 	my $method = shift @args;
 	my @path_parts;
 	my %data;
@@ -158,22 +175,24 @@ sub get_request {
 	return WWW::Asana::Request->new(
 		api_key => $self->api_key,
 		uri => $uri,
+		to => $to,
 		%data ? ( data => \%data ) : (),
 	);
 }
 
-sub parse_into {
-	my ( $self, $response, $target ) = @_;
-	my $class = 'WWW::Asana::'.$target;
-	load_class($class) unless is_class_loaded($class);
-	$class->new_from_response($response->data);
-}
+=method do
+
+This method is actually executing a request specified by all parameters beside the first one, which
+are given to L</get_request>. On this response then is called L<WWW::Asana::Response/to> with the
+first parameter as argument. The result of this is given back, the type then depends on the parameter
+for the L<WWW::Asana::Response/to> function.
+
+=cut
 
 sub do {
 	my ( $self, @args ) = @_;
-	my $target = shift @args;
 	my $response = $self->request(@args);
-	return $self->parse_into($response,$target);
+	return $response->result;
 }
 
 =method me

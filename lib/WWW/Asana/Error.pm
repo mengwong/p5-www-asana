@@ -1,4 +1,5 @@
 package WWW::Asana::Error;
+# ABSTRACT: Asana Error Class
 
 use MooX;
 

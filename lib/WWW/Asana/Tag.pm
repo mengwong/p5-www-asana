@@ -1,4 +1,5 @@
 package WWW::Asana::Tag;
+# ABSTRACT: Asana Tag Class
 
 use MooX;
 

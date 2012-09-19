@@ -1,4 +1,5 @@
 package WWW::Asana::Project;
+# ABSTRACT: Asana Project Class
 
 use MooX;
 

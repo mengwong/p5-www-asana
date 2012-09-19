@@ -1,4 +1,5 @@
 package WWW::Asana::User;
+# ABSTRACT: Asana User Class
 
 use MooX qw(
 	+WWW::Asana::Workspace

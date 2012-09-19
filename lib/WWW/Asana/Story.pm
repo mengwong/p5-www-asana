@@ -1,4 +1,5 @@
 package WWW::Asana::Story;
+# ABSTRACT: Asana Story Class
 
 use MooX;
 

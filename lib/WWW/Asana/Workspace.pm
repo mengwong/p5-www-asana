@@ -1,4 +1,5 @@
 package WWW::Asana::Workspace;
+# ABSTRACT: Asana Workspace Class
 
 use MooX;
 

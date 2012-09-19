@@ -1,4 +1,5 @@
 package WWW::Asana::Role::HasClient;
+# ABSTRACT: Role for a class which has a WWW::Asana client
 
 use MooX::Role;
 

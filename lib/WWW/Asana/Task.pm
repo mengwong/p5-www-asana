@@ -1,4 +1,5 @@
 package WWW::Asana::Task;
+# ABSTRACT: Asana Task Class
 
 use MooX;
 

@@ -1,4 +1,5 @@
 package WWW::Asana::Request;
+# ABSTRACT: Asana Request Class
 
 use MooX qw(
 	+HTTP::Request
@@ -8,6 +9,11 @@ use MooX qw(
 );
 
 has api_key => (
+	is => 'ro',
+	required => 1,
+);
+
+has to => (
 	is => 'ro',
 	required => 1,
 );

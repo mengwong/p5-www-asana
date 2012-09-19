@@ -1,4 +1,5 @@
 package WWW::Asana::Role::HasFollowers;
+# ABSTRACT: Role for a class which has followers
 
 use MooX::Role;
 

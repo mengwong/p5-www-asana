@@ -1,9 +1,12 @@
 package WWW::Asana::Response;
+# ABSTRACT: Asana Response Class
 
 use MooX qw(
 	+WWW::Asana::Error
 	+JSON
 );
+
+use Class::Load ':all';
 
 has http_response => (
 	is => 'ro',
@@ -12,6 +15,11 @@ has http_response => (
 		is_success
 		code
 	)],
+);
+
+has to => (
+	is => 'ro',
+	required => 1,
 );
 
 has errors => (
@@ -87,8 +95,22 @@ sub _build_data { shift->json_decoded_body->{data} }
 
 sub BUILDARGS {
 	my ( $class, @args ) = @_;
-	unshift @args, "http_response" if ref $args[0] eq 'HTTP::Response';
-	return { @args };
+	my $http_response = shift @args;
+	my $to = shift @args;
+	return { http_response => $http_response, to => $to, @args };
+}
+
+has result => (
+	is => 'ro',
+	lazy => 1,
+	builder => 1,
+);
+
+sub _build_result {
+	my ( $self ) = @_;
+	my $class = 'WWW::Asana::'.$self->to;
+	load_class($class) unless is_class_loaded($class);
+	$class->new_from_response($self->data);
 }
 
 1;
