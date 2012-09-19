@@ -54,13 +54,28 @@ sub _build_status_error_message {
 	return "Server error" if $self->code == 500;
 }
 
+has json => (
+	is => 'ro',
+	lazy => 1,
+	builder => 1,
+);
+
+sub _build_json {
+	my $json = JSON->new;
+	$json->allow_nonref;
+	return $json;
+}
+
 has json_decoded_body => (
 	is => 'ro',
 	lazy => 1,
 	builder => 1,
 );
 
-sub _build_json_decoded_body { decode_json(shift->content) }
+sub _build_json_decoded_body {
+	my ( $self ) = @_;
+	$self->json->decode(shift->http_response->content)
+}
 
 has data => (
 	is => 'ro',
@@ -69,5 +84,11 @@ has data => (
 );
 
 sub _build_data { shift->json_decoded_body->{data} }
+
+sub BUILDARGS {
+	my ( $class, @args ) = @_;
+	unshift @args, "http_response" if ref $args[0] eq 'HTTP::Response';
+	return { @args };
+}
 
 1;

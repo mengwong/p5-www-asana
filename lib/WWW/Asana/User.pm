@@ -1,6 +1,8 @@
 package WWW::Asana::User;
 
-use MooX;
+use MooX qw(
+	+WWW::Asana::Workspace
+);
 
 with 'WWW::Asana::Role::HasClient';
 
@@ -27,5 +29,18 @@ has workspaces => (
 	},
 	default => sub {[]},
 );
+
+sub new_from_response {
+	my ( $class, $data ) = @_;
+	my @workspaces;
+	for (@{$data->{workspaces}}) {
+		push @workspaces, WWW::Asana::Workspace->new_from_response($_);
+	}
+	delete $data->{workspaces};
+	return $class->new(
+		%{$data},
+		workspaces => \@workspaces,
+	);
+}
 
 1;

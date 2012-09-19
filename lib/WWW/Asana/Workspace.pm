@@ -14,4 +14,6 @@ has name => (
 	required => 1,
 );
 
+sub new_from_response { shift->new(shift) }
+
 1;
