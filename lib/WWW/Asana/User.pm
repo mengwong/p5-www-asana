@@ -7,6 +7,7 @@ use MooX qw(
 
 with 'WWW::Asana::Role::HasClient';
 with 'WWW::Asana::Role::CanReload';
+with 'WWW::Asana::Role::CanUpdate';
 with 'WWW::Asana::Role::HasResponse';
 
 sub own_base_args { 'users', shift->id }

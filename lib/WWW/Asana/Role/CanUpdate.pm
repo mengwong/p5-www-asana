@@ -13,7 +13,7 @@ sub update_args {
 }
 
 sub update {
-	die "TODO";
+	...;
 	my $self = shift;
 	$self->do($self->update_args(@_));
 }
