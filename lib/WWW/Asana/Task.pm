@@ -95,6 +95,49 @@ has projects => (
 		die "projects must be an ArrayRef of WWW::Asana::Project" if grep { ref $_ ne 'WWW::Asana::Project' } @{$_[0]};
 	},
 	predicate => 1,
+	lazy => 1,
+	builder => 1,
 );
+
+sub _build_projects {
+	my ( $self ) = @_;
+	$self->do('[Projects]', 'GET', $self->own_base_args, 'tags');
+}
+
+sub add_project {
+	my ( $self, $project ) = @_;
+	$self->do('', 'POST', $self->own_base_args, 'addProject', { project => $project->id } );
+}
+
+sub remove_project {
+	my ( $self, $project ) = @_;
+	$self->do('', 'POST', $self->own_base_args, 'removeProject', { project => $project->id } );
+}
+
+has tags => (
+	is => 'ro',
+	isa => sub {
+		die "tags must be an ArrayRef" unless ref $_[0] eq 'ARRAY';
+		die "tags must be an ArrayRef of WWW::Asana::Tag" if grep { ref $_ ne 'WWW::Asana::Tag' } @{$_[0]};
+	},
+	predicate => 1,
+	lazy => 1,
+	builder => 1,
+);
+
+sub _build_tags {
+	my ( $self ) = @_;
+	$self->do('[Tag]', 'GET', $self->own_base_args, 'tags');
+}
+
+sub add_tag {
+	my ( $self, $tag ) = @_;
+	$self->do('', 'POST', $self->own_base_args, 'addTag', { tag => $tag->id } );
+}
+
+sub remove_tag {
+	my ( $self, $tag ) = @_;
+	$self->do('', 'POST', $self->own_base_args, 'removeTag', { tag => $tag->id } );
+}
 
 1;

@@ -121,6 +121,8 @@ sub _build_result {
 	@codes = @{$self->request->codes} if $self->request->has_codes;
 	if ($self->has_errors) {
 		return $self->errors;
+	} elsif ($self->to eq '') {
+		return;
 	} elsif ($self->to =~ /\[([\w\d:]+)\]/) {
 		my $class = 'WWW::Asana::'.$1;
 		load_class($class) unless is_class_loaded($class);
