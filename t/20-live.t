@@ -7,9 +7,7 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 
 	use_ok('WWW::Asana');
 
-	my $asana = WWW::Asana->new(
-		api_key => $ENV{WWW_ASANA_TEST_API_KEY},
-	);
+	my $asana = WWW::Asana->new($ENV{WWW_ASANA_TEST_API_KEY});
 
 	my $me = $asana->me;
 	ok(ref $me eq 'WWW::Asana::User','Testing "me", you are: '.$me->name);
@@ -18,7 +16,7 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 	ok(ref $users_result eq 'ARRAY','Result of "users" is ARRAY');
 	for (@{$users_result}) {
 		isa_ok($_,'WWW::Asana::User','"'.$_->name.'"');
-		ok(!$_->has_email,'Userlist request users dont include email');
+		ok($_->has_email, 'has email');
 	}
 
 	sleep 1;
@@ -40,14 +38,15 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 
 	for (@{$workspaces_ref}) {
 		isa_ok($_,'WWW::Asana::Workspace','"'.$_->name.'"');
-
 		my $tasks_ref = $_->tasks($current_me);
-
 		isa_ok($tasks_ref,'ARRAY','Result of $workspace->tasks with $me on "'.$_->name.'"');
-
 		for (@{$tasks_ref}) {
 			isa_ok($_,'WWW::Asana::Task','"'.$_->name.'"');
-			use DDP; p($_); exit;
+			my $stories_ref = $_->stories;
+			isa_ok($stories_ref,'ARRAY','Result of $task->stories on "'.$_->name.'"');
+			for (@{$stories_ref}) {
+				isa_ok($_,'WWW::Asana::Story',$_->source.' '.$_->type);
+			}
 		}
 	}
 

@@ -4,15 +4,24 @@ package WWW::Asana::Story;
 use MooX;
 
 with 'WWW::Asana::Role::HasClient';
+with 'WWW::Asana::Role::CanReload';
+with 'WWW::Asana::Role::CanUpdate';
+with 'WWW::Asana::Role::HasResponse';
+with 'WWW::Asana::Role::NewFromResponse';
+
+sub own_base_args { 'tags', shift->id }
+
+sub reload_base_args { 'Tag', 'GET' }
+sub update_base_args { 'Tag', 'PUT' }
 
 has id => (
 	is => 'ro',
-	required => 1,
+	predicate => 1,
 );
 
 has text => (
 	is => 'ro',
-	required => 1,
+	predicate => 1,
 );
 
 has type => (
@@ -20,7 +29,7 @@ has type => (
 	isa => sub {
 		die "type must be 'comment' or 'system'" unless grep { $_[0] eq $_ } qw( comment system );
 	},
-	required => 1,
+	predicate => 1,
 );
 
 has source => (
@@ -29,7 +38,7 @@ has source => (
 		die "source must be web, email, mobile, api or unknown"
 			unless grep { $_[0] eq $_ } qw( web email mobile api unknown );
 	},
-	required => 1,
+	predicate => 1,
 );
 
 has target => (
@@ -46,15 +55,15 @@ has created_by => (
 	isa => sub {
 		die "created_by must be a WWW::Asana::User" unless ref $_[0] eq 'WWW::Asana::User';
 	},
-	required => 1,
+	predicate => 1,
 );
 
 has created_at => (
 	is => 'ro',
 	isa => sub {
-		die "created_at must be a DateTime" unless ref $_ eq 'DateTime';
+		die "created_at must be a DateTime" unless ref $_[0] eq 'DateTime';
 	},
-	required => 1,
+	predicate => 1,
 );
 
 1;

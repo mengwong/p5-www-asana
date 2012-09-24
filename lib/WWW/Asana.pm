@@ -24,6 +24,8 @@ use MooX qw(
 	+URI
 );
 
+use Carp qw( croak );
+
 our $VERSION ||= '0.000';
 
 =attr api_key
@@ -143,7 +145,7 @@ sub _build_response_class { 'WWW::Asana::Response' }
 
 sub BUILDARGS {
 	my ( $class, @args ) = @_;
-	unshift @args, "api_key" if @args == 1 && ref $args[0] ne 'HASH';
+	unshift @args, "api_key" if @args % 2 && ref $args[0] ne 'HASH';
 	return { @args };
 }
 
@@ -166,7 +168,7 @@ sub request {
 	}
 	my $http_response = $self->useragent->request($request->http_request);
 	my $class_response = $self->response_class;
-	return $class_response->new($http_response, $request->to, $self);
+	return $class_response->new($request, $http_response, $request->to, $self);
 }
 
 =method get_url
@@ -195,9 +197,15 @@ sub get_request {
 	my $method = shift @args;
 	my @path_parts;
 	my %data;
+	my @params;
+	my @codes;
 	for my $arg (@args) {
 		if (ref $arg eq 'HASH') {
 			$data{$_} = $arg->{$_} for (keys %{$arg});
+		} elsif (ref $arg eq 'ARRAY') {
+			push @params, [@{$arg}];
+		} elsif (ref $arg eq 'CODE') {
+			push @codes, $arg;
 		} else {
 			push @path_parts, $arg;
 		}
@@ -209,6 +217,8 @@ sub get_request {
 		uri => $uri,
 		to => $to,
 		%data ? ( data => \%data ) : (),
+		@params ? ( params => \@params ) : (),
+		@codes ? ( codes => \@codes ) : (),
 	);
 }
 
@@ -224,6 +234,9 @@ for the L<WWW::Asana::Response/to> function.
 sub do {
 	my ( $self, @args ) = @_;
 	my $response = $self->request(@args);
+	if ($response->has_errors) {
+		croak "Asana Errors:\n".join("\n",map { $_->message.( $_->has_phrase ? " [phrase:".$_->phrase."]" : "" ) } @{$response->errors})."\n";
+	}
 	return $response->result;
 }
 

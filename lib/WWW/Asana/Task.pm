@@ -8,6 +8,8 @@ with 'WWW::Asana::Role::HasFollowers';
 with 'WWW::Asana::Role::CanReload';
 with 'WWW::Asana::Role::CanUpdate';
 with 'WWW::Asana::Role::HasResponse';
+with 'WWW::Asana::Role::NewFromResponse';
+with 'WWW::Asana::Role::HasStories';
 
 sub own_base_args { 'tasks', shift->id }
 
@@ -22,7 +24,7 @@ has id => (
 has assignee => (
 	is => 'ro',
 	isa => sub {
-		die "assignee must be a WWW::Asana::User" unless ref $_[0] ne 'WWW::Asana::User';
+		die "assignee must be a WWW::Asana::User" unless ref $_[0] eq 'WWW::Asana::User';
 	},
 	predicate => 1,
 );
@@ -38,7 +40,7 @@ has assignee_status => (
 has created_at => (
 	is => 'ro',
 	isa => sub {
-		die "created_at must be a DateTime" unless ref $_ eq 'DateTime';
+		die "created_at must be a DateTime" unless ref $_[0] eq 'DateTime';
 	},
 	predicate => 1,
 );
@@ -51,7 +53,7 @@ has completed => (
 has completed_at => (
 	is => 'ro',
 	isa => sub {
-		die "created_at must be a DateTime" unless ref $_ eq 'DateTime';
+		die "completed_at must be a DateTime" unless ref $_[0] eq 'DateTime';
 	},
 	predicate => 1,
 );
@@ -59,13 +61,13 @@ has completed_at => (
 has due_on => (
 	is => 'ro',
 	isa => sub {
-		die "due_on must be a DateTime" unless ref $_ eq 'DateTime';
+		die "due_on must be a DateTime" unless ref $_[0] eq 'DateTime';
 	},
 );
 
 has name => (
 	is => 'ro',
-	required => 1,
+	predicate => 1,
 );
 
 has notes => (
@@ -75,13 +77,13 @@ has notes => (
 
 has projects => (
 	is => 'ro',
-	required => 1,
+	predicate => 1,
 );
 
 has workspace => (
 	is => 'ro',
 	isa => sub {
-		die "workspace must be a WWW::Asana::Workspace" unless ref $_[0] ne 'WWW::Asana::Workspace';
+		die "workspace must be a WWW::Asana::Workspace" unless ref $_[0] eq 'WWW::Asana::Workspace';
 	},
 	predicate => 1,
 );
@@ -94,24 +96,5 @@ has projects => (
 	},
 	predicate => 1,
 );
-
-sub new_from_response {
-	my ( $class, $data ) = @_;
-	my @followers;
-	if (defined $data->{followers}) {
-		for (@{$data->{followers}}) {
-			push @followers, WWW::Asana::User->new_from_response(
-				%{$_},
-				defined $data->{client} ? ( client => $data->{client} ) : (),
-				response => $data->{response},
-			);
-		}
-		delete $data->{followers};
-	}
-	return $class->new(
-		%{$data},
-		@followers ? (followers => \@followers) : (),
-	);
-}
 
 1;

@@ -18,6 +18,36 @@ has to => (
 	required => 1,
 );
 
+has to_type => (
+	is => 'ro',
+	lazy => 1,
+	builder => 1,
+);
+
+sub _build_to_type {
+	my ( $self ) = @_;
+	if ( $self->to =~ /\[(\w+)\]/ ) {
+		return $1;
+	} else {
+		return $self->to;	
+	}
+}
+
+has to_multi => (
+	is => 'ro',
+	lazy => 1,
+	builder => 1,
+);
+
+sub _build_to_multi {
+	my ( $self ) = @_;
+	if ( $self->to =~ /\[(\w+)\]/ ) {
+		return 1;
+	} else {
+		return 0;	
+	}
+}
+
 has uri => (
 	is => 'ro',
 	required => 1,
@@ -26,6 +56,16 @@ has uri => (
 has data => (
 	is => 'ro',
 	predicate => 'has_data',
+);
+
+has params => (
+	is => 'ro',
+	predicate => 'has_params',
+);
+
+has codes => (
+	is => 'ro',
+	predicate => 'has_codes',
 );
 
 has method => (
@@ -55,30 +95,65 @@ sub _build_json {
 sub _build__http_request {
 	my ( $self ) = @_;
 	my %data;
-	my $to = $self->to;
-	if ($to eq 'Task' or $to eq '[Task]') {
-		$data{expand} = join(',',qw(
-			followers
-		));
-	} elsif ($to eq 'User' or $to eq '[User]') {
-		$data{fields} = join(',',qw(
-			name
-			email
-		));
-		$data{expand} = join(',',qw(
-			workspaces
-		));
+	%data = %{$self->data} if $self->has_data;
+	my @params;
+	@params = @{$self->params} if $self->has_params;
+	if ($self->to_multi) {
+		my $type = $self->to_type;
+		if ($type eq 'Task') {
+			push @params, [ opt_fields => join(',',qw(
+				assignee
+				assignee_status
+				created_at
+				completed
+				completed_at
+				due_on
+				modified_at
+				name
+				notes
+			)) ];
+		} elsif ($type eq 'Story') {
+			push @params, [ opt_fields => join(',',qw(
+				created_at
+				created_by
+				text
+				target
+				source
+				type
+			)) ];
+		} elsif ($type eq 'Project') {
+			push @params, [ opt_fields => join(',',qw(
+				created_at
+				modified_at
+				name
+				notes
+			)) ];
+		} elsif ($type eq 'Tag') {
+			push @params, [ opt_fields => join(',',qw(
+				created_at
+				name
+				notes
+			)) ];
+		} elsif ($type eq 'User') {
+			push @params, [ opt_fields => join(',',qw(
+				name
+				email
+			)) ];
+		} elsif ($type eq 'Workspace') {
+			push @params, [ opt_fields => join(',',qw(
+				name
+			)) ];
+		}
 	}
 	if ($self->has_data) {
 		$data{$_} = $self->data->{$_} for (keys %{$self->data});
 	}
-	use DDP; p(%data);
 	my @headers;
 	my $uri;
 	my $body;
 	if ($self->method eq 'GET') {
 		my $u = URI->new($self->uri);
-		$u->query_param(\%data);
+		$u->query_param(@{$_}) for @params;
 		$uri = $u->as_string;
 	} else {
 		push @headers, ('Content-type', 'application/json');
@@ -92,7 +167,6 @@ sub _build__http_request {
 		defined $body ? $body : (),
 	);
 	$request->authorization_basic($self->api_key,"");
-	use DDP; p($request->uri->as_string); p($request->content);
 	return $request;
 }
 

@@ -10,6 +10,11 @@ use Class::Load ':all';
 
 with 'WWW::Asana::Role::HasClient';
 
+has request => (
+	is => 'ro',
+	required => 1,
+);
+
 has http_response => (
 	is => 'ro',
 	required => 1,
@@ -97,11 +102,11 @@ sub _build_data { shift->json_decoded_body->{data} }
 
 sub BUILDARGS {
 	my ( $class, @args ) = @_;
+	my $request = shift @args;
 	my $http_response = shift @args;
 	my $to = shift @args;
 	my $client = shift @args;
-	use DDP; p($http_response->content);
-	return { http_response => $http_response, to => $to, client => $client, @args };
+	return { request => $request, http_response => $http_response, to => $to, client => $client, @args };
 }
 
 has result => (
@@ -112,7 +117,11 @@ has result => (
 
 sub _build_result {
 	my ( $self ) = @_;
-	if ($self->to =~ /\[([\w\d:]+)\]/) {
+	my @codes;
+	@codes = @{$self->request->codes} if $self->request->has_codes;
+	if ($self->has_errors) {
+		return $self->errors;
+	} elsif ($self->to =~ /\[([\w\d:]+)\]/) {
 		my $class = 'WWW::Asana::'.$1;
 		load_class($class) unless is_class_loaded($class);
 		my @results;
@@ -120,6 +129,10 @@ sub _build_result {
 			my %data = %{$_};
 			$data{client} = $self->client if $self->has_client;
 			$data{response} = $self;
+			for (@codes) {
+				my %extra_data = $_->(%data);
+				$data{$_} = $extra_data{$_} for (keys %extra_data);
+			}
 			push @results, $class->new_from_response(\%data);
 		}
 		return \@results;
@@ -129,6 +142,10 @@ sub _build_result {
 		my %data = %{$self->data};
 		$data{client} = $self->client if $self->has_client;
 		$data{response} = $self;
+		for (@codes) {
+			my %extra_data = $_->(%data);
+			$data{$_} = $extra_data{$_} for (keys %extra_data);
+		}
 		return $class->new_from_response(\%data);
 	}
 }
