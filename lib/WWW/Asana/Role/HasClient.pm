@@ -6,9 +6,12 @@ use MooX::Role;
 has client => (
 	is => 'ro',
 	isa => sub {
-		die "followers must be a WWW::Asana" unless ref $_ eq 'WWW::Asana';
+		die "client must be a WWW::Asana" unless ref $_[0] eq 'WWW::Asana';
 	},
 	predicate => 'has_client',
+	handles => [qw(
+		do
+	)],
 );
 
 1;

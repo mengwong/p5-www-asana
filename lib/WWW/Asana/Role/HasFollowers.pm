@@ -9,7 +9,7 @@ has followers => (
 		die "followers must be an ArrayRef" unless ref $_[0] eq 'ARRAY';
 		die "followers must be an ArrayRef of WWW::Asana::User" if grep { ref $_ ne 'WWW::Asana::User' } @{$_[0]};
 	},
-	default => sub {[]},
+	predicate => 'has_followers',
 );
 
 1;

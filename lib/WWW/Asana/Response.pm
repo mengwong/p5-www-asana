@@ -8,6 +8,8 @@ use MooX qw(
 
 use Class::Load ':all';
 
+with 'WWW::Asana::Role::HasClient';
+
 has http_response => (
 	is => 'ro',
 	required => 1,
@@ -97,7 +99,9 @@ sub BUILDARGS {
 	my ( $class, @args ) = @_;
 	my $http_response = shift @args;
 	my $to = shift @args;
-	return { http_response => $http_response, to => $to, @args };
+	my $client = shift @args;
+	use DDP; p($http_response->content);
+	return { http_response => $http_response, to => $to, client => $client, @args };
 }
 
 has result => (
@@ -108,9 +112,25 @@ has result => (
 
 sub _build_result {
 	my ( $self ) = @_;
-	my $class = 'WWW::Asana::'.$self->to;
-	load_class($class) unless is_class_loaded($class);
-	$class->new_from_response($self->data);
+	if ($self->to =~ /\[([\w\d:]+)\]/) {
+		my $class = 'WWW::Asana::'.$1;
+		load_class($class) unless is_class_loaded($class);
+		my @results;
+		for (@{$self->data}) {
+			my %data = %{$_};
+			$data{client} = $self->client if $self->has_client;
+			$data{response} = $self;
+			push @results, $class->new_from_response(\%data);
+		}
+		return \@results;
+	} else {
+		my $class = 'WWW::Asana::'.$self->to;
+		load_class($class) unless is_class_loaded($class);
+		my %data = %{$self->data};
+		$data{client} = $self->client if $self->has_client;
+		$data{response} = $self;
+		return $class->new_from_response(\%data);
+	}
 }
 
 1;

@@ -54,19 +54,36 @@ sub _build_json {
 
 sub _build__http_request {
 	my ( $self ) = @_;
+	my %data;
+	my $to = $self->to;
+	if ($to eq 'Task' or $to eq '[Task]') {
+		$data{expand} = join(',',qw(
+			followers
+		));
+	} elsif ($to eq 'User' or $to eq '[User]') {
+		$data{fields} = join(',',qw(
+			name
+			email
+		));
+		$data{expand} = join(',',qw(
+			workspaces
+		));
+	}
+	if ($self->has_data) {
+		$data{$_} = $self->data->{$_} for (keys %{$self->data});
+	}
+	use DDP; p(%data);
 	my @headers;
 	my $uri;
 	my $body;
-	if ($self->has_data and $self->method eq 'GET') {
+	if ($self->method eq 'GET') {
 		my $u = URI->new($self->uri);
-		$u->query_param(%{$self->data});
+		$u->query_param(\%data);
 		$uri = $u->as_string;
 	} else {
-		$uri = $self->uri;
-		if ($self->has_data) {
-			push @headers, ('Content-type', 'application/json') if $self->has_data and $self->method ne 'GET';
-			$body = self->json->encode($self->data);
-		}
+		push @headers, ('Content-type', 'application/json');
+		$body = $self->json->encode($self->data);
+	 	$uri = $self->uri;
 	}
 	my $request = HTTP::Request->new(
 		$self->method,
@@ -75,6 +92,7 @@ sub _build__http_request {
 		defined $body ? $body : (),
 	);
 	$request->authorization_basic($self->api_key,"");
+	use DDP; p($request->uri->as_string); p($request->content);
 	return $request;
 }
 

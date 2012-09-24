@@ -111,6 +111,36 @@ has useragent_timeout => (
 	predicate => 'has_useragent_timeout',
 );
 
+=attr request_class
+
+Request class used to generate the request. Defaults to L<WWW::Asana::Request>.
+
+=cut
+
+has request_class => (
+	is => 'ro',
+	lazy => 1,
+	builder => 1,
+);
+
+sub _build_request_class { 'WWW::Asana::Request' }
+
+=attr response_class
+
+Response class used to handle the response of the request. Defaults to L<WWW::Asana::Response>.
+
+=cut
+
+has response_class => (
+	is => 'ro',
+	lazy => 1,
+	builder => 1,
+);
+
+sub _build_response_class { 'WWW::Asana::Response' }
+
+#############################################################################################################
+
 sub BUILDARGS {
 	my ( $class, @args ) = @_;
 	unshift @args, "api_key" if @args == 1 && ref $args[0] ne 'HASH';
@@ -129,13 +159,14 @@ TODO: Adding an auto-retry option on reaching limits
 sub request {
 	my ( $self, @args ) = @_;
 	my $request;
-	if (ref $args[0] eq 'WWW::Asana::Request') {
+	if (ref $args[0] eq $self->request_class) {
 		$request = $args[0];
 	} else {
 		$request = $self->get_request(@args);
 	}
 	my $http_response = $self->useragent->request($request->http_request);
-	return WWW::Asana::Response->new($http_response, $request->to);
+	my $class_response = $self->response_class;
+	return $class_response->new($http_response, $request->to, $self);
 }
 
 =method get_url
@@ -164,15 +195,16 @@ sub get_request {
 	my $method = shift @args;
 	my @path_parts;
 	my %data;
-	for (@args) {
-		if (ref $_ eq 'HASH') {
-			%data = %{$_};
+	for my $arg (@args) {
+		if (ref $arg eq 'HASH') {
+			$data{$_} = $arg->{$_} for (keys %{$arg});
 		} else {
-			push @path_parts, $_;
+			push @path_parts, $arg;
 		}
 	}
 	my $uri = $self->get_uri(@path_parts);
-	return WWW::Asana::Request->new(
+	my $request_class = $self->request_class;
+	return $request_class->new(
 		api_key => $self->api_key,
 		uri => $uri,
 		to => $to,
@@ -201,6 +233,36 @@ Makes a request to B</users/me> and gives back a L<WWW::Asana::User> of yourself
 
 =cut
 
-sub me { shift->do('User','GET','users','me') }
+sub me_args { 'User','GET','users','me' }
+sub me {
+	my $self = shift;
+	$self->do($self->me_args(@_));
+}
+
+=method users
+
+Makes a request to B</users> and gives back an arrayref of L<WWW::Asana::User> with all the
+users of the system.
+
+=cut
+
+sub users_args { '[User]','GET','users' }
+sub users {
+	my $self = shift;
+	$self->do($self->users_args(@_));
+}
+
+=method user
+
+Makes a request to B</users/> together with the first argument given, which needs to be an Asana user id.
+It gives back a L<WWW::Asana::User> of the given user.
+
+=cut
+
+sub user_args { shift; '[User]','GET','users',shift }
+sub user {
+	my $self = shift;
+	$self->do($self->user_args(@_));
+}
 
 1;

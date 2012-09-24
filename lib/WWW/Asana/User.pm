@@ -6,6 +6,12 @@ use MooX qw(
 );
 
 with 'WWW::Asana::Role::HasClient';
+with 'WWW::Asana::Role::CanReload';
+with 'WWW::Asana::Role::HasResponse';
+
+sub own_base_args { 'users', shift->id }
+
+sub reload_base_args { 'User', 'GET' }
 
 has id => (
 	is => 'ro',
@@ -19,7 +25,7 @@ has name => (
 
 has email => (
 	is => 'ro',
-	required => 1,
+	predicate => 'has_email',
 );
 
 has workspaces => (
@@ -28,19 +34,25 @@ has workspaces => (
 		die "workspaces must be an ArrayRef" unless ref $_[0] eq 'ARRAY';
 		die "workspaces must be an ArrayRef of WWW::Asana::Workspace" if grep { ref $_ ne 'WWW::Asana::Workspace' } @{$_[0]};
 	},
-	default => sub {[]},
+	predicate => 'has_workspaces',
 );
 
 sub new_from_response {
 	my ( $class, $data ) = @_;
 	my @workspaces;
-	for (@{$data->{workspaces}}) {
-		push @workspaces, WWW::Asana::Workspace->new_from_response($_);
+	if (defined $data->{workspaces}) {
+		for (@{$data->{workspaces}}) {
+			push @workspaces, WWW::Asana::Workspace->new_from_response(
+				%{$_},
+				defined $data->{client} ? ( client => $data->{client} ) : (),
+				response => $data->{response},
+			);
+		}
+		delete $data->{workspaces};
 	}
-	delete $data->{workspaces};
 	return $class->new(
 		%{$data},
-		workspaces => \@workspaces,
+		@workspaces ? (workspaces => \@workspaces) : (),
 	);
 }
 

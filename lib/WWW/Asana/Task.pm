@@ -5,10 +5,18 @@ use MooX;
 
 with 'WWW::Asana::Role::HasClient';
 with 'WWW::Asana::Role::HasFollowers';
+with 'WWW::Asana::Role::CanReload';
+with 'WWW::Asana::Role::CanUpdate';
+with 'WWW::Asana::Role::HasResponse';
+
+sub own_base_args { 'tasks', shift->id }
+
+sub reload_base_args { 'Task', 'GET' }
+sub update_base_args { 'Task', 'PUT' }
 
 has id => (
 	is => 'ro',
-	predicate => 'has_id',
+	predicate => 1,
 );
 
 has assignee => (
@@ -16,7 +24,7 @@ has assignee => (
 	isa => sub {
 		die "assignee must be a WWW::Asana::User" unless ref $_[0] ne 'WWW::Asana::User';
 	},
-	predicate => 'has_assignee',
+	predicate => 1,
 );
 
 has assignee_status => (
@@ -32,12 +40,12 @@ has created_at => (
 	isa => sub {
 		die "created_at must be a DateTime" unless ref $_ eq 'DateTime';
 	},
-	required => 1,
+	predicate => 1,
 );
 
 has completed => (
 	is => 'ro',
-	required => 1,
+	predicate => 1,
 );
 
 has completed_at => (
@@ -45,6 +53,7 @@ has completed_at => (
 	isa => sub {
 		die "created_at must be a DateTime" unless ref $_ eq 'DateTime';
 	},
+	predicate => 1,
 );
 
 has due_on => (
@@ -61,7 +70,7 @@ has name => (
 
 has notes => (
 	is => 'ro',
-	required => 1,
+	predicate => 1,
 );
 
 has projects => (
@@ -74,7 +83,7 @@ has workspace => (
 	isa => sub {
 		die "workspace must be a WWW::Asana::Workspace" unless ref $_[0] ne 'WWW::Asana::Workspace';
 	},
-	required => 1,
+	predicate => 1,
 );
 
 has projects => (
@@ -83,7 +92,26 @@ has projects => (
 		die "projects must be an ArrayRef" unless ref $_[0] eq 'ARRAY';
 		die "projects must be an ArrayRef of WWW::Asana::Project" if grep { ref $_ ne 'WWW::Asana::Project' } @{$_[0]};
 	},
-	default => sub {[]},
+	predicate => 1,
 );
+
+sub new_from_response {
+	my ( $class, $data ) = @_;
+	my @followers;
+	if (defined $data->{followers}) {
+		for (@{$data->{followers}}) {
+			push @followers, WWW::Asana::User->new_from_response(
+				%{$_},
+				defined $data->{client} ? ( client => $data->{client} ) : (),
+				response => $data->{response},
+			);
+		}
+		delete $data->{followers};
+	}
+	return $class->new(
+		%{$data},
+		@followers ? (followers => \@followers) : (),
+	);
+}
 
 1;
