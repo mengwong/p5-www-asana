@@ -1,9 +1,22 @@
 package WWW::Asana::Role::NewFromResponse;
-# ABSTRACT: 
+# ABSTRACT: Role which implements new_from_response for Asana classes
 
 use MooX::Role;
 use DateTime::Format::ISO8601;
 use Class::Load ':all';
+
+=method new_from_response
+
+This function converts the data which is get from Asana into the required
+attributes for generation of the given class. The first parameter must be
+a HashRef. This HashRef can be spiced with B<client> and B<response> to give
+a client which is able to handle the B<do> function, or to reflect the
+response which leaded to this object.
+
+The B<client> attribute is required if you want todo any calls to the Asana
+API.
+
+=cut
 
 sub new_from_response {
 	my ( $class, $data ) = @_;

@@ -85,7 +85,7 @@ has workspace => (
 	isa => sub {
 		die "workspace must be a WWW::Asana::Workspace" unless ref $_[0] eq 'WWW::Asana::Workspace';
 	},
-	predicate => 1,
+	required => 1,
 );
 
 has projects => (

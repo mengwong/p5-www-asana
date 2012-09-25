@@ -4,7 +4,7 @@ use MooX::Role;
 
 requires qw(
 	own_base_args
-	reload_base_args
+	update_base_args
 );
 
 sub update_args {
@@ -13,7 +13,6 @@ sub update_args {
 }
 
 sub update {
-	...;
 	my $self = shift;
 	$self->do($self->update_args(@_));
 }

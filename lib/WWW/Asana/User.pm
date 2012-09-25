@@ -1,18 +1,18 @@
 package WWW::Asana::User;
 # ABSTRACT: Asana User Class
 
-use MooX qw(
-	+WWW::Asana::Workspace
-);
+use MooX;
 
 with 'WWW::Asana::Role::HasClient';
-with 'WWW::Asana::Role::CanReload';
-with 'WWW::Asana::Role::CanUpdate';
 with 'WWW::Asana::Role::HasResponse';
 with 'WWW::Asana::Role::NewFromResponse';
 
-sub own_base_args { 'users', shift->id }
+with 'WWW::Asana::Role::CanReload';
+# CanNotUpdate
+# CanNotCreate
+# CanNotDelete
 
+sub own_base_args { 'users', shift->id }
 sub reload_base_args { 'User', 'GET' }
 
 has id => (
