@@ -11,6 +11,36 @@ package WWW::Asana;
 
   print $me->email;
 
+  for (@{$asana->users}) {
+    print $_->name;
+  }
+
+  my $current_me = $me->reload;
+
+  my @workspaces = @{$me->workspaces};
+
+  my @tasks = @{$some_workspace->tasks($me)};
+  my @projects = @{$some_workspace->projects};
+  my @tags = @{$some_workspace->tags};
+
+  my $new_task = $some_workspace->create_task({
+    name => 'Test out WWW::Asana',
+    notes => 'really cool library, should test it out',
+    assignee => $me,
+  });
+
+  $new_task->completed(1);
+  $new_task->due_on($new_task->created_at + DateTime::Duration->new( days => 1 ));
+  my $new_version_of_task = $new_task->update;
+
+  $new_task->add_project($some_project);
+
+  $new_task->add_tag($some_tag);
+
+  my $story = $new_task->comment('I still didnt made it, DAMN!');
+
+  print $story->created_by->name;
+
 =head1 DESCRIPTION
 
 This library gives an abstract to access the API of the L<Asana|https://www.asana.com/> issue system.
