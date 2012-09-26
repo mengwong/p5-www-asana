@@ -1,4 +1,5 @@
 package WWW::Asana::Role::CanReload;
+# ABSTRACT: Role for Asana classes which can be reloaded
 
 use MooX::Role;
 

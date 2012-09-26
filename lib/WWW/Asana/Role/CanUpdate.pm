@@ -1,4 +1,5 @@
 package WWW::Asana::Role::CanUpdate;
+# ABSTRACT: Role for Asana classes which can be updated
 
 use MooX::Role;
 

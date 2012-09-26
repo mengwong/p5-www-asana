@@ -1,4 +1,5 @@
 package WWW::Asana::Role::CanCreate;
+# ABSTRACT: Role for Asana classes which can be created
 
 use MooX::Role;
 
