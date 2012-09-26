@@ -310,3 +310,20 @@ sub user {
 }
 
 1;
+
+=head1 SUPPORT
+
+IRC
+
+  Join #duckduckgo on irc.freenode.net. Highlight Getty for fast reaction :).
+
+Repository
+
+  http://github.com/Getty/p5-www-asana
+  Pull request and additional contributors are welcome
+ 
+Issue Tracker
+
+  http://github.com/Getty/p5-www-asana/issues
+
+
