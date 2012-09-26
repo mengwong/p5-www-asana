@@ -89,7 +89,8 @@ has json_decoded_body => (
 
 sub _build_json_decoded_body {
 	my ( $self ) = @_;
-	$self->json->decode(shift->http_response->content)
+	#use DDP; p($self->http_response->content);
+	$self->json->decode($self->http_response->content);
 }
 
 has data => (
@@ -122,7 +123,7 @@ sub _build_result {
 	if ($self->has_errors) {
 		return $self->errors;
 	} elsif ($self->to eq '') {
-		return;
+		return 1;
 	} elsif ($self->to =~ /\[([\w\d:]+)\]/) {
 		my $class = 'WWW::Asana::'.$1;
 		load_class($class) unless is_class_loaded($class);

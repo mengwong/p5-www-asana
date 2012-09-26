@@ -4,15 +4,14 @@ package WWW::Asana::Story;
 use MooX;
 
 with 'WWW::Asana::Role::HasClient';
-with 'WWW::Asana::Role::CanReload';
-with 'WWW::Asana::Role::CanUpdate';
 with 'WWW::Asana::Role::HasResponse';
 with 'WWW::Asana::Role::NewFromResponse';
+
+with 'WWW::Asana::Role::CanReload';
 
 sub own_base_args { 'tags', shift->id }
 
 sub reload_base_args { 'Tag', 'GET' }
-sub update_base_args { 'Tag', 'PUT' }
 
 has id => (
 	is => 'ro',

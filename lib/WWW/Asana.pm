@@ -216,6 +216,7 @@ sub get_request {
 		api_key => $self->api_key,
 		uri => $uri,
 		to => $to,
+		method => $method,
 		%data ? ( data => \%data ) : (),
 		@params ? ( params => \@params ) : (),
 		@codes ? ( codes => \@codes ) : (),

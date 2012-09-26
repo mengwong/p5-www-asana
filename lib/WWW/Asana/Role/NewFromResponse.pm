@@ -28,12 +28,29 @@ sub new_from_response {
 		projects => 'WWW::Asana::Project',
 		tags => 'WWW::Asana::Tag',
 	);
+	my @needs_workspace = qw( projects tags );
 	my %single_mapping = (
 		assignee => 'WWW::Asana::User',
 		workspace => 'WWW::Asana::Workspace',
 		created_by => 'WWW::Asana::User',
 	);
 	my %new = %data;
+	# single mapping before multi mapping so that workspace is already there
+	for my $key (keys %single_mapping) {
+		if (exists $data{$key}) {
+			if ($data{$key}) {
+				my $target_class = $single_mapping{$key};
+				load_class($target_class) unless is_class_loaded($target_class);
+				$new{$key} = $target_class->new_from_response({
+					%{$data{$key}},
+					defined $data{client} ? ( client => $data{client} ) : (),
+					response => $data{response},
+				});
+			} else {
+				delete $new{$key};
+			}
+		}
+	}
 	for my $key (keys %multi_mapping) {
 		if (exists $data{$key}) {
 			$new{$key} = [];
@@ -43,20 +60,10 @@ sub new_from_response {
 				push @{$new{$key}}, $target_class->new_from_response({
 					%{$_},
 					defined $data{client} ? ( client => $data{client} ) : (),
+					(grep { $_ eq $key } @needs_workspace) ? ( workspace => $new{workspace} ) : (),
 					response => $data{response},
 				});
 			}
-		}
-	}
-	for my $key (keys %single_mapping) {
-		if (exists $data{$key}) {
-			my $target_class = $single_mapping{$key};
-			load_class($target_class) unless is_class_loaded($target_class);
-			$new{$key} = $target_class->new_from_response({
-				%{$data{$key}},
-				defined $data{client} ? ( client => $data{client} ) : (),
-				response => $data{response},
-			});
 		}
 	}
 	for my $key (qw( completed_at modified_at created_at due_on )) {

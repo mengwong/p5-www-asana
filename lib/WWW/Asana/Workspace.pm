@@ -14,7 +14,14 @@ with 'WWW::Asana::Role::CanUpdate';
 
 sub own_base_args { 'workspaces', shift->id }
 sub reload_base_args { 'Workspace', 'GET' }
-sub update_base_args { 'Workspace', 'PUT' }
+sub update_args {
+	my ( $self ) = @_;
+	'Workspace', 'PUT', $self->own_base_args, {
+		name => $self->name
+	}
+}
+
+use WWW::Asana::Task;
 
 =attr id
 =cut
@@ -48,7 +55,29 @@ sub tasks {
 	die 'tasks need a WWW::Asana::User or "me" as parameter' unless ref $assignee eq "WWW::Asana::User" or $assignee eq "me";
 	$self->do('[Task]', 'GET', $self->own_base_args, 'tasks', [
 		assignee => ref $assignee eq "WWW::Asana::User" ? $assignee->id : $assignee,
-	], sub { workspace => $self });
+	], sub { my ( %data ) = @_; defined $data{workspace} ? () : ( workspace => $self ) });
+}
+
+=method projects
+
+This method shows the projects of the workspace.
+
+=cut
+
+sub projects {
+	my ( $self ) = @_;
+	$self->do('[Project]', 'GET', $self->own_base_args, 'projects', sub { workspace => $self });
+}
+
+=method tags
+
+This method shows the tags of the workspace.
+
+=cut
+
+sub tags {
+	my ( $self ) = @_;
+	$self->do('[Tag]', 'GET', $self->own_base_args, 'tags', sub { workspace => $self });
 }
 
 =method create_tag
@@ -65,6 +94,18 @@ sub create_tag {
 		$name = $name->name;
 	}
 	$self->do('Tag', 'POST', $self->own_base_args, 'tags', { name => $name });
+}
+
+=method create_task
+=cut
+
+sub create_task {
+	my ( $self, $attr ) = @_;
+	die __PACKAGE__."->new_task needs a HashRef as parameter" unless ref $attr eq 'HASH';
+	my %data = %{$attr};
+	$data{workspace} = $self;
+	$data{client} = $self->client if $self->has_client;
+	return WWW::Asana::Task->new(%data)->create;
 }
 
 1;

@@ -151,14 +151,14 @@ sub _build__http_request {
 	my @headers;
 	my $uri;
 	my $body;
-	if ($self->method eq 'GET') {
-		my $u = URI->new($self->uri);
-		$u->query_param(@{$_}) for @params;
-		$uri = $u->as_string;
-	} else {
+	my $u = URI->new($self->uri);
+	$u->query_param(@{$_}) for @params;
+	$uri = $u->as_string;
+	if ($self->method ne 'GET') {
 		push @headers, ('Content-type', 'application/json');
-		$body = $self->json->encode($self->data);
-	 	$uri = $self->uri;
+		$body = $self->json->encode({ data => $self->data });
+	} elsif (%data) {
+		warn 'Request includes %data but is a GET request';
 	}
 	my $request = HTTP::Request->new(
 		$self->method,
@@ -167,6 +167,17 @@ sub _build__http_request {
 		defined $body ? $body : (),
 	);
 	$request->authorization_basic($self->api_key,"");
+
+	# use DDP;
+	# p($self->method);
+	# p($uri);
+	# p($body);
+
+	# p(%data);
+	# p(@params);
+	# p($request->uri->as_string);
+	# p($request->content);
+
 	return $request;
 }
 

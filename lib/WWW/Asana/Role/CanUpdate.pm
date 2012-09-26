@@ -3,14 +3,8 @@ package WWW::Asana::Role::CanUpdate;
 use MooX::Role;
 
 requires qw(
-	own_base_args
-	update_base_args
+	update_args
 );
-
-sub update_args {
-	my ( $self ) = @_;
-	$self->update_base_args, $self->own_base_args;
-}
 
 sub update {
 	my $self = shift;
