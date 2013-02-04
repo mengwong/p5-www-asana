@@ -108,9 +108,13 @@ sub _build__http_request {
 				completed
 				completed_at
 				due_on
+				followers
 				modified_at
 				name
 				notes
+				projects
+				parent
+				workspace
 			)) ];
 		} elsif ($type eq 'Story') {
 			push @params, [ opt_fields => join(',',qw(
