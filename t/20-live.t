@@ -93,8 +93,10 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 
 			my $one_day = DateTime::Duration->new( days => 1 );
 
+			my $taskname = localtime . ' WWW::Asana test 20-live';
+
 			my $new_task = $testws->create_task({
-				name => 'DUE TOMORROW TEST',
+				name => $taskname . " OPEN",
 				notes => 'TESTAPI',
 				assignee => $me,
 			});
@@ -116,9 +118,37 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 			is(scalar @{$updated_task->projects}, 1, 'Checking proper project amount');
 			is(scalar @{$updated_task->tags}, 1, 'Checking proper tag amount');
 
-			$updated_task->name('DUE TOMORROW TEST DONE');
+			$updated_task->name($taskname . ' DONE');
 			my $done_task = $updated_task->update;
 			isa_ok($done_task, 'WWW::Asana::Task');
+			
+			my $new_subtask = $updated_task->create_subtask(name => "my first subtask",
+															notes => "test subtask 1",
+															assignee => "me",
+				);
+			isa_ok($new_subtask, "WWW::Asana::Task");
+
+			my $subtasks = $new_task->subtasks;
+			ok(grep (ref eq "WWW::Asana::Task" && $_->name =~ /my first subtask/, @$subtasks), "got back the subtask, id=".$subtasks->[0]->id);
+
+			$new_subtask->comment("I'm the handle of a teapot");
+
+			is($new_subtask->parent->id, $new_task->id, "subtask honours its parent");
+
+			my $subsubtask;
+			eval { $subsubtask = $new_subtask->create_subtask(name => "my inner subtask"); };
+			ok($@ =~ /cannot create subtask/, "refused to create subsubtask");
+
+			$new_subtask->completed(1);
+			$new_subtask->update;
+
+			my $second_subtask = $updated_task->create_subtask(name=>"my second subtask",
+															   notes => "to test parent's subtasks attribute",
+															   assignee => "me");
+			$subtasks = $updated_task->subtasks;
+
+			ok(grep (ref eq "WWW::Asana::Task" && $_->name =~ /my first subtask/, @$subtasks), "parental subtasks list contains first subtask");
+			ok(grep (ref eq "WWW::Asana::Task" && $_->name =~ /my second subtask/, @$subtasks), "parental subtasks list contains second subtask");
 
 			my $updated_task_story = $updated_task->comment("Now its done!");
 			isa_ok($updated_task_story, 'WWW::Asana::Story');

@@ -27,8 +27,7 @@ sub create_args {
 	'Task', 'POST', 'tasks', $self->value_args, sub { workspace => $self->workspace };
 }
 
-sub opt_fields { qw( assignee assignee_status created_at completed completed_at due_on modified_at name notes ) }
-# followers projects parent workspace
+sub opt_fields { qw( assignee assignee_status created_at completed completed_at due_on followers modified_at name notes projects parent tags ) }
 
 sub value_args {
 	my ( $self ) = @_;
@@ -142,6 +141,42 @@ sub add_tag {
 sub remove_tag {
 	my ( $self, $tag ) = @_;
 	return $self->do('', 'POST', $self->own_base_args, 'removeTag', { tag => $tag->id } ) eq 1 ? 1 : 0;
+}
+
+has parent => (
+	is => 'rw',
+	predicate => 1,
+);
+
+# subtasks
+
+has subtasks => (
+	is => 'rw',
+	isa => sub {
+		die "subtasks must be an array of WWW::Asana::Task, not " . ref($_[0][0]) unless (ref $_[0] eq "ARRAY" and (grep (ref eq "WWW::Asana::Task", @{$_[0]}) == @{$_[0]}));
+	},
+	lazy => 1,
+	builder => 1,
+	predicate => 1,
+	);
+
+sub _build_subtasks {
+	my $self = shift;
+	$self->do('[Task]', 'GET', $self->own_base_args, 'subtasks', sub { workspace => $self->workspace });
+}
+
+sub create_subtask {
+	my $self = shift;
+	# if i am already a subtask I cannot create any more.
+	if ($self->parent) {
+		die sprintf ("cannot create subtask under %d (%s) because am already a subtask under %d (%s)",
+					 $self->id, $self->name,
+					 $self->parent->id, $self->parent->name);
+	}
+	my $subtask = $self->do('Task', 'POST', $self->own_base_args, 'subtasks', { @_ }, sub { parent => $self } );
+	if (not $self->has_subtasks) { $self->subtasks([$subtask]) }
+	else                         { push @{$self->subtasks}, $subtask }
+	return $subtask;
 }
 
 1;
