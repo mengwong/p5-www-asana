@@ -1,0 +1,75 @@
+* Extensions
+
+/commentary by mengwong [2013-02-10 Sun]/
+
+My project org-asana relies on Getty's www-asana.
+
+In the course of developing org-asana, I encountered the motivation for two extensions to www-asana.
+
+After some discussion of these extensions with Getty, the following theory emerged:
+
+** Caching and Sessions
+
+Consider that www-asana may be used in a short session or a long session.
+
+In a short session, the client connects, performs a handful of operations, and disconnects shortly thereafter.
+
+In a long session, the client connects, performs a handful of operations, does some other work, and performs more operations some time later. A client-side instance constitutes a local cache of a server object. Given that Asana is a multi-user application, long sessions in particular run the risk of caches going stale.
+
+To minimize this risk, the client application might aggressively re-download objects.
+
+As Asana tends to return sub-objects, to be consistent with aggressive re-downloading, the client may set the [[http://developer.asana.com/documentation/#Options][*fields* and *expand* options]].
+
+** Mode: Singleton Instance
+
+This is not yet implemented. We're thinking through the design first.
+
+*** Motivation
+
+A User has-many Workspaces.
+
+A Workspace has-many Projects.
+
+A Project has-many Tasks.
+
+A Task has-many followers, which are themselves Users.
+
+In CS terms, we would say that the object graph is cyclic, as opposed to a DAG.
+
+By default, www-asana creates a new (client-side) instance of the same (server-side) object each time that object is returned by the server. In other words, if Task_1 and Task_2 both have User_1 as a follower, each of the two Task instances will create and refer to a separate instance of the User_1 sub-object.
+
+This state of affairs can lead to unnecessary proliferation of objects.
+
+*** New Behaviour
+
+When creating your WWW::Asana object, say ->new(singleton_instance => 1).
+
+In this mode, WWW::Asana maintains an object cache, so that both Task_1 and Task_2 refer to the same User_1 object. That singleton instance will, in fact, be used whenever User_1 is mentioned.
+
+*** Interaction with other features
+
+The ->reload() method usually returns a new instance of that object, freshly downloaded from the server. When singleton_instance is enabled, the ->reload() method refreshes the existing instance with updated attributes.
+
+*** Advisory
+
+If your sessions are long, you should reload and reconsider application logic appropriately, rather than assuming that old caches are still valid.
+ 
+** Mode: Lazy Expansion
+
+This is not yet implemented. We're thinking through the design first.
+
+*** Motivation
+
+Every Asana object has an ID. Many Asana objects have other attributes, like "Name". But in Asana's /compact/ form, those other attributes are not always returned by the server.
+
+The *expand* option is designed to force expansion of sub-objects -- at a cost. See the API documentation.
+
+*** New Behaviour
+
+When creating your WWW::Asana object, say ->new(lazy_compact => 1).
+
+In this mode, WWW::Asana will not (in the Moo sense) /require/ expanded attributes at instance creation. Instances are content to be compact. Attributes will be loaded lazily. Method accessors will, if the attributes have not been previously been made available, force a reload of the expanded instance the first time they are called.
+
+*** Interaction with other features
+
+*** Advisory
