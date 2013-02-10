@@ -79,16 +79,16 @@ When a new object type appears, obviously you need to create a new class for it.
 
 ** What do the Roles do?
 
-| Class     | CanCreate | CanReload | CanUpdate | HasClient | HasFollowers | HasResponse | NewFromResponse |
-|-----------+-----------+-----------+-----------+-----------+--------------+-------------+-----------------|
-| User      |           |         1 |           |         1 |              | 1           | 1               |
-| Workspace |           |           |         1 |         1 |              | 1           | 1               |
-| Project   |           |         1 |         1 |         1 |            1 | 1           | 1               |
-| Task      |         1 |         1 |         1 |         1 |            1 | 1           | 1               |
-| Tag       |           |         1 |         1 |         1 |            1 | 1           | 1               |
-| Story     |           |         1 |           |         1 |              | 1           | 1               |
-| Request   |           |           |           |           |              |             |                 |
-| Response  |           |           |           |         1 |              |             |                 |
+| Class     | CanCreate | CanReload | CanUpdate | HasClient | HasFollowers | HasResponse | HasStories | NewFromResponse |
+|-----------+-----------+-----------+-----------+-----------+--------------+-------------+------------+-----------------|
+| User      |           |         1 |           |         1 |              |           1 |            |               1 |
+| Workspace |           |           |         1 |         1 |              |           1 |            |               1 |
+| Project   |           |         1 |         1 |         1 |            1 |           1 |          1 |               1 |
+| Task      |         1 |         1 |         1 |         1 |            1 |           1 |          1 |               1 |
+| Tag       |           |         1 |         1 |         1 |            1 |           1 |            |               1 |
+| Story     |           |         1 |           |         1 |              |           1 |            |               1 |
+| Request   |           |           |           |           |              |             |            |                 |
+| Response  |           |           |           |         1 |              |             |            |                 |
 
 There are three types of roles:
 
@@ -114,8 +114,9 @@ This seems inconsistent and maybe should be refactored.
 
 **** HasResponse objects have a *response* attribute.
 
+**** HasStories objects have a *stories* method to retrieve associatd stories, and a *comment* method to create new stories.
+
 *** New
 
 **** NewFromResponse magicks an API JSON response into the appropriate object and sub-objects.
-
 
