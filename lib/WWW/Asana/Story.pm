@@ -21,7 +21,7 @@ has id => (
 );
 
 has text => (
-	is => 'ro',
+	is => 'rw',
 	predicate => 1,
 );
 
@@ -34,7 +34,7 @@ has type => (
 );
 
 has source => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "source must be web, email, mobile, api or unknown"
 			unless grep { $_[0] eq $_ } qw( web email mobile api unknown );
@@ -43,7 +43,7 @@ has source => (
 );
 
 has target => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "target must be a WWW::Asana::Task or WWW::Asana::Project"
 			unless ref $_[0] eq 'WWW::Asana::Task' or ref $_[0] eq 'WWW::Asana::Project';
@@ -52,7 +52,7 @@ has target => (
 );
 
 has created_by => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "created_by must be a WWW::Asana::User" unless ref $_[0] eq 'WWW::Asana::User';
 	},
@@ -60,7 +60,7 @@ has created_by => (
 );
 
 has created_at => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "created_at must be a DateTime" unless ref $_[0] eq 'DateTime';
 	},

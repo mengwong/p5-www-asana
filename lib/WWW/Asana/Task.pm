@@ -56,15 +56,23 @@ has assignee => (
 );
 
 has assignee_status => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "assignee_status must be inbox, later, today or upcoming"
 			unless grep { $_[0] eq $_ } qw( inbox later today upcoming );
 	},
 );
 
+has modified_at => (
+	is => 'rw',
+	isa => sub {
+		die "modified_at must be a DateTime" unless ref $_[0] eq 'DateTime';
+	},
+	predicate => 1,
+);
+
 has created_at => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "created_at must be a DateTime" unless ref $_[0] eq 'DateTime';
 	},
@@ -78,7 +86,7 @@ has completed => (
 sub completed_value { shift->completed ? 'true' : 'false' }
 
 has completed_at => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "completed_at must be a DateTime" unless ref $_[0] eq 'DateTime';
 	},

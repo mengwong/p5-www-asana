@@ -42,22 +42,22 @@ has id => (
 );
 
 has name => (
-	is => 'ro',
+	is => 'rw',
 	predicate => 1,
 );
 
 has notes => (
-	is => 'ro',
+	is => 'rw',
 	predicate => 1,
 );
 
 has archived => (
-	is => 'ro',
+	is => 'rw',
 	predicate => 1,
 );
 
 has created_at => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "created_at must be a DateTime" unless ref $_[0] eq 'DateTime';
 	},
@@ -65,7 +65,7 @@ has created_at => (
 );
 
 has modified_at => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "modified_at must be a DateTime" unless ref $_[0] eq 'DateTime';
 	},
@@ -73,7 +73,7 @@ has modified_at => (
 );
 
 has workspace => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "workspace must be a WWW::Asana::Workspace" unless ref $_[0] eq 'WWW::Asana::Workspace';
 	},

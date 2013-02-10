@@ -4,7 +4,7 @@ package WWW::Asana::Role::HasResponse;
 use MooX::Role;
 
 has response => (
-	is => 'ro',
+	is => 'rw',
 	predicate => 'has_response',
 );
 

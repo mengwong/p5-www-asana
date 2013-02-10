@@ -18,22 +18,22 @@ sub own_base_args { 'users', shift->id }
 sub reload_base_args { 'User', 'GET' }
 
 has id => (
-	is => 'ro',
+	is => 'rw',
 	required => 1,
 );
 
 has name => (
-	is => 'ro',
+	is => 'rw',
 	predicate => 1,
 );
 
 has email => (
-	is => 'ro',
+	is => 'rw',
 	predicate => 1,
 );
 
 has workspaces => (
-	is => 'ro',
+	is => 'rw',
 	isa => sub {
 		die "workspaces must be an ArrayRef" unless ref $_[0] eq 'ARRAY';
 		die "workspaces must be an ArrayRef of WWW::Asana::Workspace" if grep { ref $_ ne 'WWW::Asana::Workspace' } @{$_[0]};
