@@ -52,7 +52,7 @@ The ->reload() method usually returns a new instance of that object, freshly dow
 
 *** Advisory
 
-If your sessions are long, you should reload and reconsider application logic appropriately, rather than assuming that old caches are still valid.
+If your sessions are long, you should ->reload() frequently and reconsider application logic appropriately, rather than assuming that old caches are still valid.
  
 ** Mode: Lazy Expansion
 

@@ -309,7 +309,19 @@ sub user {
 	$self->do($self->user_args(@_));
 }
 
+=attr singleton_instance (MODE)
+
+If you set this to 1, objects will be conserved. See doc/mengwong-extensions.org for more details.
+
+=cut
+
+has singleton_instance => (is => 'ro', default => sub { 0 });
+
+has singleton_cache => (is => 'ro', default => sub { {} });
+
 1;
+
+
 
 =head1 SUPPORT
 
