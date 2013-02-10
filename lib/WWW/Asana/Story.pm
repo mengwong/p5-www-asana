@@ -13,6 +13,8 @@ sub own_base_args { 'tags', shift->id }
 
 sub reload_base_args { 'Tag', 'GET' }
 
+sub opt_fields { qw( created_at created_by text target source type) }
+
 has id => (
 	is => 'ro',
 	predicate => 1,

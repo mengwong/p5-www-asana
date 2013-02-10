@@ -12,6 +12,8 @@ with 'WWW::Asana::Role::CanReload';
 # CanNotCreate
 # CanNotDelete
 
+sub opt_fields { qw(name email) }
+
 sub own_base_args { 'users', shift->id }
 sub reload_base_args { 'User', 'GET' }
 

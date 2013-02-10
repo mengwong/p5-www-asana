@@ -33,6 +33,8 @@ sub value_args {
 	};
 }
 
+sub opt_fields { qw( created_at modified_at name notes ) }
+
 has id => (
 	is => 'ro',
 	predicate => 1,

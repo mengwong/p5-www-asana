@@ -21,6 +21,8 @@ sub update_args {
 	}
 }
 
+sub opt_fields { qw( name ) }
+
 use WWW::Asana::Task;
 
 =attr id

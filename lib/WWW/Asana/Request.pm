@@ -33,6 +33,8 @@ sub _build_to_type {
 	}
 }
 
+use Class::Load ':all';
+
 has to_multi => (
 	is => 'ro',
 	lazy => 1,
@@ -100,53 +102,10 @@ sub _build__http_request {
 	@params = @{$self->params} if $self->has_params;
 	if ($self->to_multi) {
 		my $type = $self->to_type;
-		if ($type eq 'Task') {
-			push @params, [ opt_fields => join(',',qw(
-				assignee
-				assignee_status
-				created_at
-				completed
-				completed_at
-				due_on
-				followers
-				modified_at
-				name
-				notes
-				projects
-				parent
-				workspace
-			)) ];
-		} elsif ($type eq 'Story') {
-			push @params, [ opt_fields => join(',',qw(
-				created_at
-				created_by
-				text
-				target
-				source
-				type
-			)) ];
-		} elsif ($type eq 'Project') {
-			push @params, [ opt_fields => join(',',qw(
-				created_at
-				modified_at
-				name
-				notes
-			)) ];
-		} elsif ($type eq 'Tag') {
-			push @params, [ opt_fields => join(',',qw(
-				created_at
-				name
-				notes
-			)) ];
-		} elsif ($type eq 'User') {
-			push @params, [ opt_fields => join(',',qw(
-				name
-				email
-			)) ];
-		} elsif ($type eq 'Workspace') {
-			push @params, [ opt_fields => join(',',qw(
-				name
-			)) ];
+		my $target_class = "WWW::Asana::$type";
+		load_class($target_class) unless is_class_loaded($target_class);
+		if ($target_class->can("opt_fields")) {
+			push @params, [ opt_fields => join(',',$target_class->opt_fields()) ];
 		}
 	}
 	if ($self->has_data) {

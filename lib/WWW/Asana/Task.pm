@@ -27,6 +27,9 @@ sub create_args {
 	'Task', 'POST', 'tasks', $self->value_args, sub { workspace => $self->workspace };
 }
 
+sub opt_fields { qw( assignee assignee_status created_at completed completed_at due_on modified_at name notes ) }
+# followers projects parent workspace
+
 sub value_args {
 	my ( $self ) = @_;
 	return {
