@@ -10,6 +10,7 @@ with 'WWW::Asana::Role::NewFromResponse';
 with 'WWW::Asana::Role::HasFollowers';
 with 'WWW::Asana::Role::HasStories';
 
+with 'WWW::Asana::Role::CanCreate';
 with 'WWW::Asana::Role::CanReload';
 with 'WWW::Asana::Role::CanUpdate';
 

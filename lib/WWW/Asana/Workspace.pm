@@ -98,7 +98,7 @@ sub create_tag {
 	return WWW::Asana::Tag->new(%$arg)->create;
 }
 
-=method create_task
+=method create_task ({name=>...,notes=>...})
 
 Adds a new task to the workspace.
 
@@ -106,11 +106,25 @@ Adds a new task to the workspace.
 
 sub create_task {
 	my ( $self, $attr ) = @_;
-	die __PACKAGE__."->new_task needs a HashRef as parameter" unless ref $attr eq 'HASH';
+	die __PACKAGE__."->create_task needs a HashRef as parameter" unless ref $attr eq 'HASH';
 	my %data = %{$attr};
 	$data{workspace} = $self;
 	$data{client} = $self->client if $self->has_client;
 	return WWW::Asana::Task->new(%data)->create;
+}
+
+=method create_project ({name=>...,notes=>...})
+
+Adds a new project to the workspace.
+
+=cut
+
+sub create_project {
+	my ( $self, $attr ) = @_;
+	die __PACKAGE__."->create_project needs a HashRef as parameter" unless ref $attr eq 'HASH';
+	$attr->{workspace} = $self;
+	$attr->{client} = $self->client if $self->has_client;
+	return WWW::Asana::Project->new(%$attr)->create;
 }
 
 1;

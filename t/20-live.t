@@ -93,10 +93,21 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 
 			my $one_day = DateTime::Duration->new( days => 1 );
 
+			# create a new tag
+
 			my $tagname = "test_tag_".time;
 
 			my $new_tag = $testws->create_tag({name=>$tagname, notes=>"test tag 1"});
 			isa_ok($new_tag,"WWW::Asana::Tag");
+
+			# create a new project
+
+			my $projectname = "test project " . time;
+
+			my $new_project = $testws->create_project({name=>$projectname, notes=>"test project 1 from WWW::Asana 20-live.t"});
+			isa_ok($new_project,"WWW::Asana::Project");
+
+			# create a new task
 
 			my $taskname = localtime . ' WWW::Asana::Task test 20-live';
 
@@ -106,14 +117,25 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 				assignee => $me,
 			});
 			isa_ok($new_task,'WWW::Asana::Task');
+
+			# create a new story in the task
+
 			my $new_task_story = $new_task->comment("I'm a little teapot");
 			isa_ok($new_task_story,'WWW::Asana::Story');
 			is($new_task_story->created_by->id, $me->id, 'Checking for proper created_by on story');
 			is($new_task_story->text, "I'm a little teapot", 'Checking for proper text on story');
 
+			# connect the task to the projects
+
 			ok($new_task->add_project($testprj), 'Checking for successful addProject');
+			ok($new_task->add_project($new_project), 'Added newly created project');
+
+			# connect the task to the tags
+
 			ok($new_task->add_tag($testtag), 'Checking for successful addTag');
 			ok($new_task->add_tag($new_tag), 'Added newly created tag');
+
+			# update the task attributes
 
 			$new_task->due_on($new_task->created_at + $one_day);
 			$new_task->completed(1);
@@ -121,12 +143,14 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 			isa_ok($updated_task, 'WWW::Asana::Task');
 			ok($updated_task->completed, 'Checking that updated task is really completed');
 			ok($updated_task->has_due_on, 'Checking that due_on is set');
-			is(scalar @{$updated_task->projects}, 1, 'Checking proper project amount');
+			is(scalar @{$updated_task->projects}, 2, 'Checking proper project amount');
 			is(scalar @{$updated_task->tags}, 2, 'Checking proper tag amount');
 
 			$updated_task->name($taskname . ' DONE');
 			my $done_task = $updated_task->update;
 			isa_ok($done_task, 'WWW::Asana::Task');
+
+			# create a subtask
 			
 			my $new_subtask = $updated_task->create_subtask({name => "my first subtask",
 															 notes => "test subtask 1",
@@ -141,9 +165,13 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 
 			is($new_subtask->parent->id, $new_task->id, "subtask honours its parent");
 
+			# a task can have a subtask, but a subtask can't
+
 			my $subsubtask;
 			eval { $subsubtask = $new_subtask->create_subtask(name => "my inner subtask"); };
 			ok($@ =~ /cannot create subtask/, "refused to create subsubtask");
+
+			# update subtask attributes
 
 			$new_subtask->completed(1);
 			$new_subtask->update;
@@ -151,10 +179,21 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 			my $second_subtask = $updated_task->create_subtask({name=>"my second subtask",
 																notes => "to test parent's subtasks attribute",
 																assignee => "me"});
+
+			# connect subtask to project
+
+			$second_subtask->add_project($new_project);
+			$second_subtask->completed(1);
+			$second_subtask->update;
+
+			# did the task update its own subtasks?
+
 			$subtasks = $updated_task->subtasks;
 
 			ok(grep (ref eq "WWW::Asana::Task" && $_->name =~ /my first subtask/, @$subtasks), "parental subtasks list contains first subtask");
 			ok(grep (ref eq "WWW::Asana::Task" && $_->name =~ /my second subtask/, @$subtasks), "parental subtasks list contains second subtask");
+
+			# close out the task
 
 			my $updated_task_story = $updated_task->comment("Now its done!");
 			isa_ok($updated_task_story, 'WWW::Asana::Story');
