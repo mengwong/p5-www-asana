@@ -108,7 +108,7 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 
 			ok($new_task->add_project($testprj), 'Checking for successful addProject');
 			ok($new_task->add_tag($testtag), 'Checking for successful addTag');
-			
+
 			$new_task->due_on($new_task->created_at + $one_day);
 			$new_task->completed(1);
 			my $updated_task = $new_task->update;
@@ -122,10 +122,10 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 			my $done_task = $updated_task->update;
 			isa_ok($done_task, 'WWW::Asana::Task');
 			
-			my $new_subtask = $updated_task->create_subtask(name => "my first subtask",
-															notes => "test subtask 1",
-															assignee => "me",
-				);
+			my $new_subtask = $updated_task->create_subtask({name => "my first subtask",
+															 notes => "test subtask 1",
+															 assignee => "me",
+				});
 			isa_ok($new_subtask, "WWW::Asana::Task");
 
 			my $subtasks = $new_task->subtasks;
@@ -142,9 +142,9 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 			$new_subtask->completed(1);
 			$new_subtask->update;
 
-			my $second_subtask = $updated_task->create_subtask(name=>"my second subtask",
-															   notes => "to test parent's subtasks attribute",
-															   assignee => "me");
+			my $second_subtask = $updated_task->create_subtask({name=>"my second subtask",
+																notes => "to test parent's subtasks attribute",
+																assignee => "me"});
 			$subtasks = $updated_task->subtasks;
 
 			ok(grep (ref eq "WWW::Asana::Task" && $_->name =~ /my first subtask/, @$subtasks), "parental subtasks list contains first subtask");

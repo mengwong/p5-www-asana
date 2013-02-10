@@ -173,7 +173,7 @@ sub create_subtask {
 					 $self->id, $self->name,
 					 $self->parent->id, $self->parent->name);
 	}
-	my $subtask = $self->do('Task', 'POST', $self->own_base_args, 'subtasks', { @_ }, sub { parent => $self } );
+	my $subtask = $self->do('Task', 'POST', $self->own_base_args, 'subtasks', @_, sub { parent => $self } );
 	if (not $self->has_subtasks) { $self->subtasks([$subtask]) }
 	else                         { push @{$self->subtasks}, $subtask }
 	return $subtask;
