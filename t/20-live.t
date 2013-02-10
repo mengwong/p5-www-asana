@@ -93,7 +93,12 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 
 			my $one_day = DateTime::Duration->new( days => 1 );
 
-			my $taskname = localtime . ' WWW::Asana test 20-live';
+			my $tagname = "test_tag_".time;
+
+			my $new_tag = $testws->create_tag({name=>$tagname, notes=>"test tag 1"});
+			isa_ok($new_tag,"WWW::Asana::Tag");
+
+			my $taskname = localtime . ' WWW::Asana::Task test 20-live';
 
 			my $new_task = $testws->create_task({
 				name => $taskname . " OPEN",
@@ -108,6 +113,7 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 
 			ok($new_task->add_project($testprj), 'Checking for successful addProject');
 			ok($new_task->add_tag($testtag), 'Checking for successful addTag');
+			ok($new_task->add_tag($new_tag), 'Added newly created tag');
 
 			$new_task->due_on($new_task->created_at + $one_day);
 			$new_task->completed(1);
@@ -116,7 +122,7 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 			ok($updated_task->completed, 'Checking that updated task is really completed');
 			ok($updated_task->has_due_on, 'Checking that due_on is set');
 			is(scalar @{$updated_task->projects}, 1, 'Checking proper project amount');
-			is(scalar @{$updated_task->tags}, 1, 'Checking proper tag amount');
+			is(scalar @{$updated_task->tags}, 2, 'Checking proper tag amount');
 
 			$updated_task->name($taskname . ' DONE');
 			my $done_task = $updated_task->update;
