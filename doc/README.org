@@ -46,7 +46,7 @@ The do() method:
 
 Any sub-objects returned in the response are instantiated and made part of the main object.
 
-The call stack looks like this:
+The call stack looks like this: (this will make more sense if you view it in Org mode, rather than as HTML.)
 
 **** WWW::Asana->do()
 ***** WWW::Asana->request()
@@ -79,16 +79,16 @@ When a new object type appears, obviously you need to create a new class for it.
 
 ** What do the Roles do?
 
-| Class     | CanCreate | CanReload | CanUpdate | HasClient | HasFollowers | HasResponse | HasStories | NewFromResponse |
-|-----------+-----------+-----------+-----------+-----------+--------------+-------------+------------+-----------------|
-| User      |           |         1 |           |         1 |              |           1 |            |               1 |
-| Workspace |           |         1 |         1 |         1 |              |           1 |            |               1 |
-| Project   |         1 |         1 |         1 |         1 |            1 |           1 |          1 |               1 |
-| Task      |         1 |         1 |         1 |         1 |            1 |           1 |          1 |               1 |
-| Tag       |         1 |         1 |         1 |         1 |            1 |           1 |            |               1 |
-| Story     |           |         1 |           |         1 |              |           1 |            |               1 |
-| Request   |           |           |           |           |              |             |            |                 |
-| Response  |           |           |           |         1 |              |             |            |                 |
+| Class     | CanCreate | CanReload | CanUpdate | HasClient | HasFollowers | HasResponse | HasStories | HasTasks | NewFromResponse |
+|-----------+-----------+-----------+-----------+-----------+--------------+-------------+------------+----------+-----------------|
+| User      |           |         1 |           |         1 |              |           1 |            |          |               1 |
+| Workspace |           |         1 |         1 |         1 |              |           1 |            |          |               1 |
+| Project   |         1 |         1 |         1 |         1 |            1 |           1 |          1 | 1        |               1 |
+| Task      |         1 |         1 |         1 |         1 |            1 |           1 |          1 |          |               1 |
+| Tag       |         1 |         1 |         1 |         1 |            1 |           1 |            | 1        |               1 |
+| Story     |           |         1 |           |         1 |              |           1 |            |          |               1 |
+| Request   |           |           |           |           |              |             |            |          |                 |
+| Response  |           |           |           |         1 |              |             |            |          |                 |
 
 There are three types of roles:
 
@@ -109,6 +109,10 @@ There are three types of roles:
 **** HasResponse objects have a *response* attribute.
 
 **** HasStories objects have a *stories* method to retrieve associatd stories, and a *comment* method to create new stories.
+
+**** HasTasks objects have a *tasks* method to retrieve associatd tasks.
+
+A few classes which don't compose HasTasks also have tasks methods.
 
 *** New
 

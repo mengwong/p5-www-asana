@@ -41,4 +41,14 @@ has workspaces => (
 	predicate => 1,
 );
 
+has tasks => (is=>'rw', predicate=>1, lazy=>1, builder=>1);
+
+# Iterate through all of that user's Workspaces. This is how
+# you get all the tasks for a given user.
+
+sub _build_tasks {
+	my $self = shift;
+	return [ map { @{ $_->tasks($self) || [] } } @{$self->workspaces} ];
+}
+
 1;

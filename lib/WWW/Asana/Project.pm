@@ -80,4 +80,6 @@ has workspace => (
 	predicate => 1,
 );
 
+with 'WWW::Asana::Role::HasTasks';
+
 1;

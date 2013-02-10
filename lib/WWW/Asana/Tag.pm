@@ -66,4 +66,6 @@ has workspace => (
 	required => 1,
 );
 
+with 'WWW::Asana::Role::HasTasks';
+
 1;

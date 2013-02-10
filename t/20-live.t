@@ -135,6 +135,24 @@ if (defined $ENV{WWW_ASANA_TEST_API_KEY}) {
 			ok($new_task->add_tag($testtag), 'Checking for successful addTag');
 			ok($new_task->add_tag($new_tag), 'Added newly created tag');
 
+			# ->tasks()
+
+			# can we go from Project to task?
+			my $new_project_tasks = $new_project->tasks;
+			ok(grep ($_->id == $new_task->id, @$new_project_tasks),  "found task in   Project->tasks (there were @{[scalar @$new_project_tasks]})");
+
+			# can we go from Workspace to task?
+			my $testws_tasks = $testws->tasks("me");
+			ok(grep ($_->id == $new_task->id, @$testws_tasks),       "found task in Workspace->tasks (there were @{[scalar @$testws_tasks]})");
+
+			# can we go from Tag to task?
+			my $new_tag_tasks = $new_tag->tasks;
+			ok(grep ($_->id == $new_task->id, @$new_tag_tasks),      "found task in       Tag->tasks (there were @{[scalar @$new_tag_tasks]})");
+
+			# can we go from User to task?
+			my $me_tasks = $me->tasks;
+			ok(grep ($_->id == $new_task->id, @$me_tasks),           "found task in      User->tasks (there were @{[scalar @$me_tasks]})");
+
 			# update the task attributes
 
 			$new_task->due_on($new_task->created_at + $one_day);
