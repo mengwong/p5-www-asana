@@ -82,7 +82,7 @@ When a new object type appears, obviously you need to create a new class for it.
 | Class     | CanCreate | CanReload | CanUpdate | HasClient | HasFollowers | HasResponse | HasStories | NewFromResponse |
 |-----------+-----------+-----------+-----------+-----------+--------------+-------------+------------+-----------------|
 | User      |           |         1 |           |         1 |              |           1 |            |               1 |
-| Workspace |           |           |         1 |         1 |              |           1 |            |               1 |
+| Workspace |           |         1 |         1 |         1 |              |           1 |            |               1 |
 | Project   |         1 |         1 |         1 |         1 |            1 |           1 |          1 |               1 |
 | Task      |         1 |         1 |         1 |         1 |            1 |           1 |          1 |               1 |
 | Tag       |         1 |         1 |         1 |         1 |            1 |           1 |            |               1 |
@@ -96,13 +96,7 @@ There are three types of roles:
 
 **** CanCreate pushes a newly created instance to the server. (POST)
 
-At present the only class that composes CanCreate is Task, even though many other object types can be created. Task itself has create_story() which creates a Story, yet Story does not compose CanCreate.
-
-This seems inconsistent and maybe should be refactored.
-
 **** CanReload retrieves a newer instance of itself from the server. (GET)
-
-***** TODO Why doesn't Workspace compose CanReload? 
 
 **** CanUpdate updates a locally modified instance to the server. (PUT)
 
