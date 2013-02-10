@@ -28,11 +28,12 @@ sub new_from_response {
 		projects => 'WWW::Asana::Project',
 		tags => 'WWW::Asana::Tag',
 	);
-	my @needs_workspace = qw( projects tags );
+	my @needs_workspace = qw( projects tags parent );
 	my %single_mapping = (
 		assignee => 'WWW::Asana::User',
 		workspace => 'WWW::Asana::Workspace',
 		created_by => 'WWW::Asana::User',
+		parent => 'WWW::Asana::Task',
 	);
 	my %new = %data;
 	# single mapping before multi mapping so that workspace is already there
@@ -44,6 +45,7 @@ sub new_from_response {
 				$new{$key} = $target_class->new_from_response({
 					%{$data{$key}},
 					defined $data{client} ? ( client => $data{client} ) : (),
+					(grep { $_ eq $key } @needs_workspace) ? ( workspace => $new{workspace} ) : (),
 					response => $data{response},
 				});
 			} else {
